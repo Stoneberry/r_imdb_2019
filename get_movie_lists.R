@@ -12,9 +12,19 @@ imbd_links["low_rated_movies_link"] <- 'https://www.imdb.com/chart/bottom?sort=r
 imbd_links["top_rated_tv_link"] <- 'https://www.imdb.com/chart/toptv/?ref_=nv_tvv_250' 
 imbd_links["low_rated_tv_link"] <- 'https://www.imdb.com/list/ls062374418/?sort=list_order,asc&st_dt=&mode=detail&page='
 
-imbd_links["most_pop_movies_link"] <- 'https://www.imdb.com/chart/moviemeter/?sort=rk,asc&mode=simple&page='
-imbd_links["most_pop_tv_link"] <- 'https://www.imdb.com/chart/tvmeter/?ref_=nv_tvv_mptv'
+#imbd_links["most_pop_movies_link"] <- 'https://www.imdb.com/chart/moviemeter/?sort=rk,asc&mode=simple&page='
+#imbd_links["most_pop_tv_link"] <- 'https://www.imdb.com/chart/tvmeter/?ref_=nv_tvv_mptv'
 
+
+##---------------------------------------------------------------------------------
+
+# Есть два типа данных рейтигов, из которых собирались списки фильмов: 3 созданных
+# imdb и 1 созданный пользователем. 
+# Они имеют разную разметку, поэтому для каждого из них, были написаны отдельные функции
+
+
+
+# функция достает информацию про каждый сериал из чарта imdb 
 
 get_movie_id <- function(data_length, results_title, results_rating){
   
@@ -47,6 +57,9 @@ get_movie_id <- function(data_length, results_title, results_rating){
   return(df)}
 
 
+##---------------------------------------------------------------------------------
+# функция парсит чарт с фильмами и сериалами, сделанный imdb
+
 parse_imdb_lists <- function(webpage){
   
   results_title <- webpage %>% html_nodes(".titleColumn")
@@ -57,6 +70,9 @@ parse_imdb_lists <- function(webpage){
   df <- get_movie_id(data_length, results_title, results_rating)
   return(df)}
 
+
+##---------------------------------------------------------------------------------
+# функция достает информацию про каждый сериал из чарта пользователя 
 
 get_movie_id_users_list <- function(webpage, vals){
   
@@ -87,6 +103,9 @@ get_movie_id_users_list <- function(webpage, vals){
   return(vals)}
 
 
+##---------------------------------------------------------------------------------
+# функция парсит чарт с фильмами и сериалами, сделанный пользователем
+
 parse_user_lists <- function(name){
   
   vals <- list(ids=c(), links=c(), names=c(), dates=c(), rates=c())
@@ -96,11 +115,15 @@ parse_user_lists <- function(name){
     webpage <- read_html(url)
     vals <- get_movie_id_users_list(webpage, vals)}
 
-  df <- tibble(movies = vals$names, years = vals$dates,
-               ids = vals$ids, links = vals$links, rates=vals$rates)
+  df <- as_tibble(vals)
+  #df <- tibble(movies = vals$names, years = vals$dates,
+  #             ids = vals$ids, links = vals$links, rates=vals$rates)
   return(df)}
 
 
+
+##---------------------------------------------------------------------------------
+# Парсим рейтинги
 
 for (name in attributes(imbd_links)[[1]]){
   
@@ -113,6 +136,7 @@ for (name in attributes(imbd_links)[[1]]){
   write_csv(df, str_c("r_imdb/", name, '.csv'))
             
   Sys.sleep(5)}
+
 
 
 
